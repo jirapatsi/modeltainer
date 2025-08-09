@@ -1,0 +1,6 @@
+models:
+  test-model:
+    service_url: "http://localhost:8001"
+  embedding-model:
+    service_url: "http://localhost:8002"
+    embeddings: true
