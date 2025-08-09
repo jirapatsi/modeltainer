@@ -1,52 +1,116 @@
-# Plan Overview
+# ModelTainer Project Plan
 
-This document outlines the planned modules, associated tasks, and deliverables for ModelTainer.
+## Vision
+One command to deploy multiple LLM backends behind an OpenAI-compatible gateway. Supports vLLM on NVIDIA/AMD GPUs and llama.cpp on CPU/ARM with safe defaults, observability, and Slurm+Apptainer portability.
 
-## M1. API Gateway (OpenAI-compatible)
-- **Tasks:** request/response schema, routing by model, streaming SSE proxy, retries/timeouts, structured logging, auth, health/reload.
-- **Deliverables:** FastAPI service + Dockerfile + tests.
+## Non-Goals
+No training or full OpenAI platform clone; scope limited to `/v1/models`, `/v1/chat/completions` (optional `/v1/completions`) and streaming SSE.
 
-## M2. Model Registry & Routing Config
-- **Tasks:** config/models.yaml schema, hot-reload, validation, friendly errors, example entries.
-- **Deliverables:** YAML schema + loader + unit tests.
+## Architecture
+```
+[ Clients ] -> [ Gateway (FastAPI) ] -> [ vLLM | llama.cpp ]
+```
+`config/models.yaml` drives routing and hot reloads.
 
-## M3. vLLM Backend (GPU)
-- **Tasks:** Compose service, NVIDIA profile, HF cache volume, gated model token handling, basic perf flags, readiness/health.
-- **Deliverables:** Compose service + runbook.
+## Modules
+### M1. API Gateway
+- Endpoints: `/healthz`, `/v1/models`, `/v1/chat/completions` (+`/v1/completions`).
+- SSE streaming, auth, routing, timeouts/retries, JSON logs, OpenAI error schema.
+- Deliverables: gateway app, Dockerfile, openapi.json, proxy snippets.
+- Acceptance: curl/Python streaming through both backends.
 
-## M4. llama.cpp Backend (CPU/Edge/ARM)
-- **Tasks:** Compose service, .gguf model mount, sane defaults, health, ARM notes.
-- **Deliverables:** Compose service + runbook.
+### M2. Model Registry
+- YAML schema for model name, backend URL, limits, optional env/headers.
+- Hot reload with validation.
+- Deliverables: Pydantic schema, loader, tests, sample config & secrets env.
+- Acceptance: edit config → live update; invalid configs rejected.
 
-## M5. Multi-Model Concurrency
-- **Tasks:** run multiple services on distinct ports; gateway routes by model string; docs for A/B comparison.
-- **Deliverables:** Example: 2×vLLM + 1×llama.cpp concurrently.
+### M3. vLLM Backend (GPU)
+- Compose service for CUDA or ROCm with persistent HF cache and health checks.
+- Deliverables: `compose.vllm.yaml`, runbook, multi-GPU notes.
+- Acceptance: gateway streams to vLLM container locally.
 
-## M6. HPC Integration (Slurm + Apptainer)
-- **Tasks:** sbatch template, --nv, port exposure, node proxy notes, MIG/A100 partitioning.
-- **Deliverables:** scripts/slurm/*.sbatch + guide.
+### M4. llama.cpp Backend (CPU/ARM)
+- `llama-server` or `llama_cpp.server` with sane defaults and GGUF mounts.
+- Deliverables: `compose.llamacpp.yaml` and native runbook.
+- Acceptance: two models on different ports listed via gateway.
 
-## M7. Security Baseline
-- **Tasks:** Bearer key, reverse proxy recommendations (TLS/rate-limit), resource caps/ulimits, non-root containers, read-only FS (where possible).
-- **Deliverables:** Security doc + example proxy snippets.
+### M5. Multi-Model Concurrency
+- Gateway routes by model string; includes A/B comparison script.
+- Acceptance: concurrent requests stream results from distinct models.
 
-## M8. Observability
-- **Tasks:** structured logs, request IDs, latency/error counters, Prometheus endpoints (gateway), log guidance for backends.
-- **Deliverables:** metrics in gateway + Loki/ELK-ready logs.
+### M6. HPC Integration
+- Slurm templates and Apptainer recipes with `--nv` and GPU selection.
+- Acceptance: vLLM runs inside Slurm job; client reaches gateway via tunnel.
 
-## M9. CI/CD & Quality Gates
-- **Tasks:** pre-commit (ruff/black), mypy, pytest, Docker build, compose config lint, smoke test.
-- **Deliverables:** .pre-commit-config.yaml, pyproject.toml, GitHub Actions.
+### M7. Security Baseline
+- Bearer auth, per-key allow-lists, non-root/read-only containers, basic rate limits.
+- Deliverables: `docs/security.md` and secure Compose defaults.
+- Acceptance: unauthenticated requests rejected; vuln scans clean.
 
-## M10. Benchmark Harness
-- **Tasks:** simple load/latency sampler, concurrency sweep, token throughput report, CSV/JSON output.
-- **Deliverables:** tools/bench.py + example plots.
+### M8. Observability
+- Prometheus metrics, JSON logs, sample Grafana dashboards.
+- Acceptance: `tools/bench.py` shows live QPS/latency.
 
-## M11. Client Examples
-- **Tasks:** Python and curl examples targeting gateway only; shows model routing and streaming usage.
-- **Deliverables:** examples/ snippets.
+### M9. CI/CD
+- `pre-commit`, `mypy`, `pytest`, compose lint; GitHub Actions matrix and image publishing.
+- Acceptance: CI passes before merge; images published on tag.
 
-## M12. Documentation
-- **Tasks:** quickstart, model swap instructions, troubleshooting, resource sizing cheat-sheet.
-- **Deliverables:** README sections + docs.
+### M10. Benchmark Harness
+- `tools/bench.py` sweeps concurrency and emits CSV/JSON (latency, tokens/sec).
+- Acceptance: reproducible results for vLLM and llama.cpp.
 
+### M11. Client Examples
+- Python and curl snippets demonstrating streaming and model routing.
+- Acceptance: examples run against both backends with one command.
+
+### M12. Documentation
+- Quickstart, model swap, troubleshooting, GPU sizing, HPC guide, security checklist.
+- Acceptance: new user streams first token in <5 minutes via `docker compose up`.
+
+## Example Config
+```yaml
+version: 1
+models:
+  - name: llama3-8b-instruct
+    backend: vllm
+    endpoint: http://vllm-1:8000/v1
+    format: chat_completions
+  - name: q4-cpu-llama
+    backend: llamacpp
+    endpoint: http://llama-cpp-1:8080/v1
+    format: chat_completions
+```
+
+## Compose Excerpt
+```yaml
+services:
+  gateway:
+    build: ./gateway
+    environment:
+      - MT_CONFIG=/app/config/models.yaml
+    ports: ["8081:8081"]
+    depends_on: [vllm-1, llama-cpp-1]
+    read_only: true
+    user: "10001:10001"
+
+  vllm-1:
+    image: vllm/vllm-openai:latest
+    command: --model NousResearch/Meta-Llama-3-8B-Instruct --port 8000
+    volumes: [./data/hf:/data/hf]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+
+  llama-cpp-1:
+    image: ghcr.io/ggerganov/llama.cpp:server
+    command: --model /models/llama3.q4_k_m.gguf --port 8080 --ctx-size 8192 --threads 8 --parallel 2
+    volumes: [./models:/models]
+```
+
+## Done Criteria
+1. `docker compose up` → `curl -N http://localhost:8081/v1/chat/completions` streams tokens.
+2. Editing `config/models.yaml` hot-reloads routing with zero downtime.
+3. `tools/bench.py` runs and emits `results.csv`.
