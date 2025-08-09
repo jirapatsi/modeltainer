@@ -14,16 +14,16 @@ No training or full OpenAI platform clone; scope limited to `/v1/models`, `/v1/c
 
 ## Modules
 ### M1. API Gateway
-- Endpoints: `/healthz`, `/v1/models`, `/v1/chat/completions` (+`/v1/completions`).
-- SSE streaming, auth, routing, timeouts/retries, JSON logs, OpenAI error schema.
-- Deliverables: gateway app, Dockerfile, openapi.json, proxy snippets.
+- Endpoints: `/healthz`, `/v1/models`, `/v1/chat/completions` (plus `/v1/completions`).
+- Supports SSE streaming, Bearer auth, per-model routing, request timeouts/retries, JSON logs and OpenAI-compatible error schema.
+- Deliverables: gateway app, Dockerfile, `openapi.json`, proxy snippets.
 - Acceptance: curl/Python streaming through both backends.
 
 ### M2. Model Registry
 - YAML schema for model name, backend URL, limits, optional env/headers.
-- Hot reload with validation.
+- Hot reload with validation via Pydantic models.
 - Deliverables: Pydantic schema, loader, tests, sample config & secrets env.
-- Acceptance: edit config → live update; invalid configs rejected.
+- Acceptance: editing the config file triggers live update; invalid configs are rejected.
 
 ### M3. vLLM Backend (GPU)
 - Compose service for CUDA or ROCm with persistent HF cache and health checks.

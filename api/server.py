@@ -5,30 +5,34 @@ import logging
 from typing import Any, Dict
 from uuid import uuid4
 
-import yaml
 import httpx
 from fastapi import FastAPI, HTTPException, Request, Depends, Header
 from fastapi.responses import JSONResponse, StreamingResponse
-from pydantic import BaseModel, Field
+from fastapi.exception_handlers import http_exception_handler as fastapi_http_exception_handler
+from pydantic import BaseModel
+
+from .registry import Registry, ModelConfig
 
 CONFIG_PATH = os.environ.get("MODELS_CONFIG", "config/models.yaml")
 
 logger = logging.getLogger("gateway")
-logging.basicConfig(level=logging.INFO, format='%(message)s')
+logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 app = FastAPI()
 
 
-def load_config() -> Dict[str, Dict[str, Any]]:
-    try:
-        with open(CONFIG_PATH, 'r') as f:
-            data = yaml.safe_load(f) or {}
-        models = data.get('models', {})
-        app.state.models = models
-        return models
-    except FileNotFoundError:
-        app.state.models = {}
-        return {}
+def load_config() -> Dict[str, ModelConfig]:
+    """Load model registry from YAML."""
+    registry = Registry(CONFIG_PATH)
+    app.state.registry = registry
+    return registry.models
+
+
+@app.exception_handler(HTTPException)
+async def custom_http_exception_handler(request: Request, exc: HTTPException):
+    if isinstance(exc.detail, dict) and "error" in exc.detail:
+        return JSONResponse(status_code=exc.status_code, content={"error": exc.detail["error"]})
+    return await fastapi_http_exception_handler(request, exc)
 
 
 @app.on_event("startup")
@@ -80,24 +84,53 @@ def verify_api_key(authorization: str | None = Header(default=None)) -> None:
     api_key = os.environ.get("API_KEY")
     if api_key:
         if authorization is None or not authorization.startswith("Bearer "):
-            raise HTTPException(status_code=401, detail="Missing token")
+            raise HTTPException(
+                status_code=401,
+                detail={"error": {"message": "Missing token", "type": "invalid_request_error"}},
+            )
         token = authorization.split(" ", 1)[1]
         if token != api_key:
-            raise HTTPException(status_code=401, detail="Invalid token")
+            raise HTTPException(
+                status_code=401,
+                detail={"error": {"message": "Invalid token", "type": "invalid_request_error"}},
+            )
 
 
-def get_model_config(model: str) -> Dict[str, Any]:
-    models = getattr(app.state, "models", {})
-    if model not in models:
-        suggestions = list(models.keys())
-        raise HTTPException(status_code=404, detail={"error": "Unknown model", "suggestions": suggestions})
-    return models[model]
+def maybe_reload() -> None:
+    registry = getattr(app.state, "registry", None)
+    if registry is None:
+        load_config()
+        return
+    try:
+        registry.maybe_reload()
+    except Exception as exc:
+        logger.error("Failed to reload config: %s", exc)
 
 
-async def proxy_request(path: str, payload: Dict[str, Any], stream: bool, model_cfg: Dict[str, Any], request: Request) -> StreamingResponse | JSONResponse:
-    url = model_cfg["service_url"] + path
+def get_model_config(model: str) -> ModelConfig:
+    maybe_reload()
+    registry: Registry = app.state.registry
+    if model not in registry.models:
+        suggestions = list(registry.models.keys())
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "error": {
+                    "message": "Unknown model",
+                    "type": "not_found_error",
+                    "code": "model_not_found",
+                    "suggestions": suggestions,
+                }
+            },
+        )
+    return registry.models[model]
+
+
+async def proxy_request(path: str, payload: Dict[str, Any], stream: bool, model_cfg: ModelConfig, request: Request) -> StreamingResponse | JSONResponse:
+    url = model_cfg.service_url + path
     headers = dict(request.headers)
     headers.pop("host", None)
+    headers.update(model_cfg.headers)
     if stream:
         async def event_stream() -> Any:
             async with app.state.client.stream("POST", url, json=payload, headers=headers) as resp:
@@ -135,15 +168,29 @@ async def log_middleware(request: Request, call_next):
     return response
 
 
-@app.get("/.well-known/health")
+@app.get("/healthz")
 async def health() -> Dict[str, Any]:
-    models = getattr(app.state, "models", {})
-    return {"status": "ok", "models": list(models.keys())}
+    registry: Registry | None = getattr(app.state, "registry", None)
+    models = list(registry.models.keys()) if registry else []
+    return {"status": "ok", "models": models}
+
+
+@app.get("/v1/models")
+async def list_models() -> Dict[str, Any]:
+    registry: Registry | None = getattr(app.state, "registry", None)
+    data = [{"id": name, "object": "model"} for name in registry.models.keys()] if registry else []
+    return {"data": data, "object": "list"}
 
 
 @app.post("/admin/reload")
 async def admin_reload() -> Dict[str, str]:
-    load_config()
+    try:
+        load_config()
+    except Exception as exc:
+        raise HTTPException(
+            status_code=400,
+            detail={"error": {"message": str(exc), "type": "invalid_request_error"}},
+        )
     return {"status": "reloaded"}
 
 
@@ -162,6 +209,9 @@ async def completions(req: CompletionRequest, request: Request, _: None = Depend
 @app.post("/v1/embeddings")
 async def embeddings(req: EmbeddingRequest, request: Request, _: None = Depends(verify_api_key)):
     model_cfg = get_model_config(req.model)
-    if not model_cfg.get("embeddings", False):
-        raise HTTPException(status_code=400, detail="Model does not support embeddings")
+    if not model_cfg.embeddings:
+        raise HTTPException(
+            status_code=400,
+            detail={"error": {"message": "Model does not support embeddings", "type": "invalid_request_error"}},
+        )
     return await proxy_request("/v1/embeddings", req.model_dump(), False, model_cfg, request)

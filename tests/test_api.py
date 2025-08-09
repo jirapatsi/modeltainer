@@ -15,11 +15,20 @@ client = TestClient(app)
 
 def test_health():
     load_config()
-    resp = client.get("/.well-known/health")
+    resp = client.get("/healthz")
     assert resp.status_code == 200
     body = resp.json()
     assert body["status"] == "ok"
     assert "test-model" in body["models"]
+
+
+def test_models_endpoint():
+    load_config()
+    resp = client.get("/v1/models")
+    assert resp.status_code == 200
+    body = resp.json()
+    ids = [m["id"] for m in body["data"]]
+    assert "test-model" in ids
 
 
 def test_unknown_model():
@@ -27,4 +36,4 @@ def test_unknown_model():
     resp = client.post("/v1/chat/completions", json=payload, headers={"Authorization": "Bearer test"})
     assert resp.status_code == 404
     body = resp.json()
-    assert "suggestions" in body["detail"]
+    assert "suggestions" in body["error"]
