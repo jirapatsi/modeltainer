@@ -46,15 +46,7 @@ ModelTainer delivers one‑command deployment for large language models on CPUs 
 
 ## Documentation
 
-- [Quickstart guide](docs/quickstart.md)
-- [Model swap guide](docs/model-swap.md)
-- [Resource sizing cheatsheet](docs/resource-sizing.md)
-- [Troubleshooting tips](docs/troubleshooting.md)
-- [A/B testing](docs/ab-testing.md)
-- [Security considerations](docs/Security.md)
-- [vLLM runbook](docs/vllm-runbook.md)
-- [Apptainer workflow](docs/apptainer.md)
-- [NVIDIA Docker workflow](docs/nvidia-docker.md)
+See the [documentation index](docs/README.md) for guides on quickstart, security, model swapping, troubleshooting, and more.
 
 ## License
 
