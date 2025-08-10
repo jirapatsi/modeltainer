@@ -1,0 +1,4 @@
+models:
+  llama-cpp:
+    backend: llamacpp
+    backend_url: http://llcpp:8002
