@@ -1,4 +1,4 @@
 models:
-  llama-cpp:
+  gemma-3-1b-it:
     backend: llamacpp
     backend_url: http://llcpp:8002

@@ -2,7 +2,8 @@ version: "3.9"
 
 x-vllm-base: &vllm-base
   command: >-
-    --model ${VLLM_MODEL:-NousResearch/Meta-Llama-3-8B-Instruct}
+    --model ${VLLM_MODEL:-openai/gpt-oss-20b}
+    --quantization ${VLLM_QUANT:-mxfp4}
     --port ${VLLM_PORT:-8000} ${VLLM_ARGS:-}
   ports:
     - "${VLLM_PORT:-8000}:${VLLM_PORT:-8000}"
