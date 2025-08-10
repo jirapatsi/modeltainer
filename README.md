@@ -18,7 +18,7 @@ ModelTainer delivers one‑command deployment for large language models on CPUs 
 
 1. Clone the repository and enter it:
    ```bash
-   git clone https://example.com/modeltainer.git
+   git clone https://github.com/sirirajgenomics/modeltainer
    cd modeltainer
    ```
 2. Launch the default services:
