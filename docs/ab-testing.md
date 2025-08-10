@@ -1,8 +1,6 @@
 # A/B Testing with Multiple Models
 
-ModelTainer routes requests based on the `model` field. By defining distinct model IDs in `config/models.yaml`, multiple backends can run side by side to support A/B experiments.
-
-For a ready-to-run example that launches two vLLM services and a llama.cpp embedding server, see [../multi-models-concurrency/compose.yaml](../multi-models-concurrency/compose.yaml).
+ModelTainer routes requests based on the `model` field. By defining distinct model IDs in `config/models.yaml`, multiple backends can run side by side to support A/B experiments. Start each backend independently in Docker or Apptainer and expose unique ports before launching the gateway with the multi-model configuration.
 
 ## Example Configuration
 ```yaml

@@ -24,7 +24,7 @@ Bring up ModelTainer and serve an LLM behind an OpenAI-compatible API in minutes
    ```
    A streaming response confirms the stack is running.
 
-For advanced options such as model selection or multi-model setups, see the [model swap guide](model-swap.md) and [A/B testing](ab-testing.md).
+For advanced options such as model selection or running multiple containers, see the [model swap guide](model-swap.md) and [A/B testing](ab-testing.md).
 
 ## Notes
 - The first run downloads models into `./data/hf`, which can take several minutes.
