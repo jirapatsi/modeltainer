@@ -1,7 +1,9 @@
+PYTHON := $(shell command -v python3 2>/dev/null || command -v python)
+
 .PHONY: up down logs print-models
 
 print-models:
-	@python scripts/print_models.py
+	@$(PYTHON) scripts/print_models.py
 
 up: print-models
 	docker compose up -d
