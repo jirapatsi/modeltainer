@@ -22,11 +22,13 @@ ModelTainer delivers one‑command deployment for large language models on CPUs 
    git clone https://github.com/sirirajgenomics/modeltainer
    cd modeltainer
    ```
-2. Launch the default services:
+2. Start your LLM backends (e.g., vLLM and llama.cpp) separately. They must expose endpoints matching the URLs in `config/models.yaml`.
+3. Launch the gateway and supporting services:
    ```bash
    make up
    ```
-3. Verify the stack with a chat completion request:
+   The `make` command prints the configured model backends before composing the Docker services.
+4. Verify the stack with a chat completion request:
    ```bash
    curl -N -X POST http://localhost:8080/v1/chat/completions \
      -H 'Content-Type: application/json' \
@@ -36,10 +38,9 @@ ModelTainer delivers one‑command deployment for large language models on CPUs 
 
 ### Configuration
 
-- The first run downloads models into `./data/hf`.
-- By default vLLM serves `openai/gpt-oss-20b-it` in `mxfp4` precision and llama.cpp serves `gemma-3-1b-it` quantized to `Q4_K_M`.
-- Override the defaults by setting `VLLM_MODEL` or `LLAMACPP_MODEL` before `make up`.
-- Stop and remove the stack with `make down`.
+- Ensure your LLM containers serve the models referenced in `config/models.yaml`.
+- The `make up` command prints the configured models so you can verify endpoints before startup.
+- Stop and remove the gateway stack with `make down`.
 
 ## Documentation
 

@@ -1,6 +1,9 @@
-.PHONY: up down logs
+.PHONY: up down logs print-models
 
-up:
+print-models:
+	@python scripts/print_models.py
+
+up: print-models
 	docker compose up -d
 
 down:
