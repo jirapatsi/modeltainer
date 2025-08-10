@@ -1,21 +1,42 @@
 from __future__ import annotations
 
 import os
+from enum import Enum
 from pathlib import Path
 from typing import Dict
 
 import yaml
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import (
+    AliasChoices,
+    BaseModel,
+    Field,
+    HttpUrl,
+    PositiveInt,
+    ValidationError,
+)
+
+
+class Backend(str, Enum):
+    """Supported model backend implementations."""
+
+    VLLM = "vllm"
+    LLAMACPP = "llamacpp"
 
 
 class ModelConfig(BaseModel):
     """Configuration for a single model backend."""
 
-    service_url: str
+    backend_url: HttpUrl = Field(validation_alias=AliasChoices("backend_url", "service_url"))
+    backend: Backend = Backend.VLLM
     embeddings: bool = False
     headers: Dict[str, str] = Field(default_factory=dict)
     env: Dict[str, str] = Field(default_factory=dict)
-    limits: Dict[str, int] = Field(default_factory=dict)
+    limits: Dict[str, PositiveInt] = Field(default_factory=dict)
+
+    model_config = {
+        "extra": "forbid",
+        "populate_by_name": True,
+    }
 
 
 class ModelsConfig(BaseModel):
@@ -56,4 +77,4 @@ class Registry:
             raise exc
 
 
-__all__ = ["ModelConfig", "Registry"]
+__all__ = ["Backend", "ModelConfig", "Registry"]

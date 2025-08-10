@@ -74,11 +74,11 @@ version: 1
 models:
   - name: llama3-8b-instruct
     backend: vllm
-    endpoint: http://vllm-1:8000/v1
+    backend_url: http://vllm-1:8000
     format: chat_completions
   - name: q4-cpu-llama
     backend: llamacpp
-    endpoint: http://llama-cpp-1:8080/v1
+    backend_url: http://llama-cpp-1:8080
     format: chat_completions
 ```
 
