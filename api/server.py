@@ -167,14 +167,14 @@ async def health() -> Dict[str, Any]:
 
 
 @app.get("/v1/models")
-async def list_models() -> Dict[str, Any]:
+async def list_models(_: None = Depends(verify_api_key)) -> Dict[str, Any]:
     registry: Registry | None = getattr(app.state, "registry", None)
     data = [{"id": name, "object": "model"} for name in registry.models.keys()] if registry else []
     return {"data": data, "object": "list"}
 
 
 @app.post("/admin/reload")
-async def admin_reload() -> Dict[str, str]:
+async def admin_reload(_: None = Depends(verify_api_key)) -> Dict[str, str]:
     try:
         load_config()
     except Exception as exc:
