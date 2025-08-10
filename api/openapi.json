@@ -121,60 +121,6 @@
         }
       }
     },
-    "/v1/completions": {
-      "post": {
-        "summary": "Completions",
-        "operationId": "completions_v1_completions_post",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Authorization"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CompletionRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/v1/embeddings": {
       "post": {
         "summary": "Embeddings",
@@ -276,29 +222,6 @@
           "content"
         ],
         "title": "ChatMessage"
-      },
-      "CompletionRequest": {
-        "properties": {
-          "model": {
-            "type": "string",
-            "title": "Model"
-          },
-          "prompt": {
-            "title": "Prompt"
-          },
-          "stream": {
-            "type": "boolean",
-            "title": "Stream",
-            "default": false
-          }
-        },
-        "additionalProperties": true,
-        "type": "object",
-        "required": [
-          "model",
-          "prompt"
-        ],
-        "title": "CompletionRequest"
       },
       "EmbeddingRequest": {
         "properties": {
