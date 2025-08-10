@@ -29,13 +29,14 @@ ModelTainer delivers one‑command deployment for large language models on CPUs 
    ```bash
    curl -N -X POST http://localhost:8080/v1/chat/completions \
      -H 'Content-Type: application/json' \
-     -d '{"model": "llama3-8b-instruct", "messages": [{"role": "user", "content": "Hello"}]}'
+     -d '{"model": "gpt-oss-20b-it", "messages": [{"role": "user", "content": "Hello"}]}'
    ```
    A streaming response confirms everything is running.
 
 ### Configuration
 
 - The first run downloads models into `./data/hf`.
+- By default vLLM serves `openai/gpt-oss-20b-it` in `mxfp4` precision and llama.cpp serves `gemma-3-1b-it` quantized to `Q4_K_M`.
 - Override the defaults by setting `VLLM_MODEL` or `LLAMACPP_MODEL` before `make up`.
 - Stop and remove the stack with `make down`.
 
