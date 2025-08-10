@@ -8,6 +8,7 @@ ModelTainer delivers one‑command deployment for large language models on CPUs 
 - **Hot‑swappable models** – Change models via configuration only; no rebuilds required.
 - **Portable** – Runs on a laptop or scales out to multi‑node clusters using Docker Compose.
 - **Streaming responses** – Tokens stream as they are generated.
+- **Apptainer support** – Package models into transferable Apptainer images.
 
 ## Prerequisites
 
@@ -50,6 +51,7 @@ ModelTainer delivers one‑command deployment for large language models on CPUs 
 - [Security considerations](docs/Security.md)
 - [vLLM runbook](docs/vllm-runbook.md)
 - [Multi-model compose example](multi-models-concurrency/compose.yaml)
+- [Apptainer workflow](docs/apptainer.md)
 
 ## License
 
