@@ -1,0 +1,81 @@
+version: "3.9"
+
+x-vllm-base: &vllm-base
+  build:
+    context: ../vllm
+    args:
+      BASE_IMAGE: ${VLLM_IMAGE_CUDA:-vllm/vllm-openai:v0.10.0}
+  environment:
+    HF_HOME: /data/hf
+  volumes:
+    - ../data/hf:/data/hf
+  healthcheck:
+    test: ["CMD-SHELL", "curl -fsS http://localhost:${VLLM_PORT:-8000}/health || exit 1"]
+    interval: 30s
+    timeout: 10s
+    retries: 3
+    start_period: 20s
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: ${GPU_COUNT:-1}
+            capabilities: [gpu]
+
+services:
+  gateway:
+    build: ../api
+    ports:
+      - "${GATEWAY_PORT:-8080}:8080"
+    environment:
+      MODELS_CONFIG: /config/models.yaml
+    volumes:
+      - ../config/models.yaml:/config/models.yaml:ro
+    depends_on:
+      vllm-a:
+        condition: service_healthy
+      vllm-b:
+        condition: service_healthy
+      llcpp:
+        condition: service_healthy
+
+  vllm-a:
+    <<: *vllm-base
+    environment:
+      VLLM_PORT: 8001
+      VLLM_MODEL: ${VLLM_MODEL_A:-NousResearch/Meta-Llama-3-8B-Instruct}
+    command: >-
+      --model ${VLLM_MODEL_A:-NousResearch/Meta-Llama-3-8B-Instruct}
+      --port 8001 ${VLLM_ARGS_A:-}
+    ports:
+      - "8001:8001"
+
+  vllm-b:
+    <<: *vllm-base
+    environment:
+      VLLM_PORT: 8003
+      VLLM_MODEL: ${VLLM_MODEL_B:-NousResearch/Meta-Llama-3-8B-Instruct}
+    command: >-
+      --model ${VLLM_MODEL_B:-NousResearch/Meta-Llama-3-8B-Instruct}
+      --port 8003 ${VLLM_ARGS_B:-}
+    ports:
+      - "8003:8003"
+
+  llcpp:
+    build: ../llama.cpp
+    command: >-
+      --model /models/${LLAMACPP_MODEL:-model.gguf}
+      -c ${LLAMACPP_CONTEXT:-4096}
+      --host 0.0.0.0
+      --port 8002
+    volumes:
+      - ../models:/models
+    ports:
+      - "8002:8002"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8002/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
