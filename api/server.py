@@ -63,15 +63,6 @@ class ChatCompletionRequest(BaseModel):
         extra = "allow"
 
 
-class CompletionRequest(BaseModel):
-    model: str
-    prompt: Any
-    stream: bool = False
-
-    class Config:
-        extra = "allow"
-
-
 class EmbeddingRequest(BaseModel):
     model: str
     input: Any
@@ -198,12 +189,6 @@ async def admin_reload() -> Dict[str, str]:
 async def chat_completions(req: ChatCompletionRequest, request: Request, _: None = Depends(verify_api_key)):
     model_cfg = get_model_config(req.model)
     return await proxy_request("/v1/chat/completions", req.model_dump(), req.stream, model_cfg, request)
-
-
-@app.post("/v1/completions")
-async def completions(req: CompletionRequest, request: Request, _: None = Depends(verify_api_key)):
-    model_cfg = get_model_config(req.model)
-    return await proxy_request("/v1/completions", req.model_dump(), req.stream, model_cfg, request)
 
 
 @app.post("/v1/embeddings")
