@@ -52,6 +52,23 @@ def test_unknown_model():
     assert "suggestions" in body["error"]
 
 
+def test_authorization_header_not_forwarded():
+    load_config()
+
+    async def handler(request):
+        assert "authorization" not in request.headers
+        return httpx.Response(200, json={"ok": True})
+
+    transport = httpx.MockTransport(handler)
+    async_client = httpx.AsyncClient(transport=transport)
+    app.state.client = async_client
+
+    payload = {"model": "gpt-oss-20b-it", "messages": [{"role": "user", "content": "hi"}]}
+    resp = client.post("/v1/chat/completions", json=payload, headers={"Authorization": "Bearer test"})
+    assert resp.status_code == 200
+    asyncio.run(async_client.aclose())
+
+
 def test_streaming_proxy():
     load_config()
 
