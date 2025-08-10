@@ -4,7 +4,7 @@
 One command to deploy multiple LLM backends behind an OpenAI-compatible gateway. Supports vLLM on NVIDIA/AMD GPUs and llama.cpp on CPU/ARM with safe defaults, observability, and Slurm+Apptainer portability.
 
 ## Non-Goals
-No training or full OpenAI platform clone; scope limited to `/v1/models`, `/v1/chat/completions` (optional `/v1/completions`) and streaming SSE.
+No training or full OpenAI platform clone; scope limited to `/v1/models`, `/v1/chat/completions` and streaming SSE.
 
 ## Architecture
 ```
@@ -14,7 +14,7 @@ No training or full OpenAI platform clone; scope limited to `/v1/models`, `/v1/c
 
 ## Modules
 ### M1. API Gateway
-- Endpoints: `/healthz`, `/v1/models`, `/v1/chat/completions` (plus `/v1/completions`).
+- Endpoints: `/healthz`, `/v1/models`, `/v1/chat/completions`.
 - Supports SSE streaming, Bearer auth, per-model routing, request timeouts/retries, JSON logs and OpenAI-compatible error schema.
 - Deliverables: gateway app, Dockerfile, `openapi.json`, proxy snippets.
 - Acceptance: curl/Python streaming through both backends.
