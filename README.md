@@ -14,8 +14,9 @@ ModelTainer delivers one‑command deployment for large language models on CPUs 
 
 ## Prerequisites
 
-- [Docker](https://docs.docker.com/get-docker/) and Docker Compose
+- [Docker](https://docs.docker.com/get-docker/) Engine \>= 24 with Compose V2
 - Git
+- (Optional) [Hugging Face token](https://huggingface.co/settings/tokens) for gated models
 
 ## Quickstart
 
@@ -24,7 +25,17 @@ ModelTainer delivers one‑command deployment for large language models on CPUs 
    git clone https://github.com/sirirajgenomics/modeltainer
    cd modeltainer
    ```
-2. Start your LLM backends (e.g., vLLM and llama.cpp) separately. They must expose endpoints matching the URLs in `config/models.yaml`. If VRAM allows, launch multiple Docker or Apptainer containers to serve several models at once.
+2. Start example LLM backends so the gateway has targets to proxy. The commands below launch a GPU vLLM service and a CPU llama.cpp service:
+   ```bash
+   # Download the Gemma model required by llama.cpp
+   mkdir -p models
+   huggingface-cli download unsloth/gemma-3-1b-it-GGUF --include "gemma-3-1b-it-Q4_K_M.gguf" --local-dir models
+
+   # Start the backends
+   docker compose -f vllm/compose.yaml --profile cuda up -d vllm-cuda
+   docker compose -f llama.cpp/compose.yaml up -d llcpp
+   ```
+   The services expose `http://vllm:8000` and `http://llcpp:8002`, matching the defaults in `config/models.yaml`.
 3. Launch the gateway and supporting services:
    ```bash
    make up
@@ -38,11 +49,11 @@ ModelTainer delivers one‑command deployment for large language models on CPUs 
    ```
    A streaming response confirms everything is running.
 
-### Configuration
+### Configuration and Cleanup
 
 - Ensure your LLM containers serve the models referenced in `config/models.yaml`.
 - The `make up` command prints the configured models so you can verify endpoints before startup.
-- Stop and remove the gateway stack with `make down`.
+- Stop the gateway with `make down` and remove backend containers with `docker compose -f <file> down`.
 
 ## Documentation
 
