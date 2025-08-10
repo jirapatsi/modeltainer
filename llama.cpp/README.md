@@ -4,16 +4,16 @@ This setup runs the `llama-server` from [llama.cpp](https://github.com/ggml-org/
 
 ## Usage
 
-1. Place a GGUF model in the `models` directory at the repository root:
+1. Download the Gemma 3 1B (IT) model in `Q4_K_M` precision to the `models` directory:
    ```bash
    mkdir -p models
-   cp /path/to/your/model.gguf models/
+   huggingface-cli download unsloth/gemma-3-1b-it-GGUF --include "gemma-3-1b-it-Q4_K_M.gguf" --local-dir models
    ```
 2. Start the service and gateway:
    ```bash
-   LLAMACPP_MODEL=model.gguf docker compose -f llama.cpp/compose.yaml up -d
+   docker compose -f llama.cpp/compose.yaml up -d
    ```
-   * `LLAMACPP_MODEL` – filename of the model under `models/` (default: `model.gguf`)
+   * `LLAMACPP_MODEL` – override the model filename under `models/` (default: `gemma-3-1b-it-Q4_K_M.gguf`)
    * `LLAMACPP_PORT` – port to expose the server (default: `8002`)
    * `LLAMACPP_CONTEXT` – context length passed via `-c` (default: `4096`)
 
