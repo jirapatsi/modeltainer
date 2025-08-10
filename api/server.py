@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.exception_handlers import http_exception_handler as fastapi_http_exception_handler
 from pydantic import BaseModel
 
-from .registry import Registry, ModelConfig
+from .registry import ModelConfig, Registry
 
 CONFIG_PATH = os.environ.get("MODELS_CONFIG", "config/models.yaml")
 
@@ -118,7 +118,7 @@ def get_model_config(model: str) -> ModelConfig:
 
 
 async def proxy_request(path: str, payload: Dict[str, Any], stream: bool, model_cfg: ModelConfig, request: Request) -> StreamingResponse | JSONResponse:
-    url = model_cfg.service_url + path
+    url = model_cfg.backend_url + path
     headers = dict(request.headers)
     headers.pop("host", None)
     headers.update(model_cfg.headers)

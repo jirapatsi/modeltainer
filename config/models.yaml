@@ -1,10 +1,12 @@
 models:
   test-model:
-    service_url: "http://localhost:8001"
+    backend: vllm
+    backend_url: "http://localhost:8001"
     headers:
       x-test: "1"
     limits:
       max_tokens: 1000
   embedding-model:
-    service_url: "http://localhost:8002"
+    backend: llamacpp
+    backend_url: "http://localhost:8002"
     embeddings: true
