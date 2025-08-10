@@ -9,6 +9,8 @@ ModelTainer delivers one‑command deployment for large language models on CPUs 
 - **Portable** – Runs on a laptop or scales out to multi‑node clusters using Docker Compose.
 - **Streaming responses** – Tokens stream as they are generated.
 - **Apptainer support** – Package models into transferable Apptainer images.
+- **NVIDIA Docker support** – Build GPU-enabled images with a user-defined
+  NVIDIA Docker base version.
 
 ## Prerequisites
 
@@ -53,6 +55,7 @@ ModelTainer delivers one‑command deployment for large language models on CPUs 
 - [vLLM runbook](docs/vllm-runbook.md)
 - [Multi-model compose example](multi-models-concurrency/compose.yaml)
 - [Apptainer workflow](docs/apptainer.md)
+- [NVIDIA Docker workflow](docs/nvidia-docker.md)
 
 ## License
 
