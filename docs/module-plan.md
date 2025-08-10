@@ -27,7 +27,7 @@ No training or full OpenAI platform clone; scope limited to `/v1/models`, `/v1/c
 
 ### M3. vLLM Backend (GPU)
 - Compose service for CUDA or ROCm with persistent HF cache and health checks.
-- Deliverables: `compose.vllm.yaml`, runbook, multi-GPU notes.
+- Deliverables: `vllm/compose.yaml`, runbook, multi-GPU notes.
 - Acceptance: gateway streams to vLLM container locally.
 
 ### M4. llama.cpp Backend (CPU/ARM)
