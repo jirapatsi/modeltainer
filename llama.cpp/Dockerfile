@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-ARG BASE_IMAGE=ghcr.io/ggerganov/llama.cpp:server
+ARG BASE_IMAGE=ghcr.io/ggerganov/llama.cpp:latest
 FROM ${BASE_IMAGE}
 
 # The base image already sets entrypoint to llama-server
