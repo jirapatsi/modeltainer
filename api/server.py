@@ -120,7 +120,8 @@ def get_model_config(model: str) -> ModelConfig:
 async def proxy_request(path: str, payload: Dict[str, Any], stream: bool, model_cfg: ModelConfig, request: Request) -> StreamingResponse | JSONResponse:
     url = str(model_cfg.backend_url) + path
     headers = dict(request.headers)
-    headers.pop("host", None)
+    for h in ("host", "authorization", "Authorization"):
+        headers.pop(h, None)
     headers.update(model_cfg.headers)
     if stream:
         async def event_stream() -> Any:
