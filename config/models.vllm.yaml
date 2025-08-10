@@ -1,0 +1,4 @@
+models:
+  llama3-8b-instruct:
+    backend: vllm
+    backend_url: http://vllm-cuda:8000

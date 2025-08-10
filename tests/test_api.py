@@ -4,6 +4,9 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
+import asyncio
+
+import httpx
 from fastapi.testclient import TestClient
 
 from api.server import app, load_config
@@ -37,3 +40,34 @@ def test_unknown_model():
     assert resp.status_code == 404
     body = resp.json()
     assert "suggestions" in body["error"]
+
+
+def test_streaming_proxy():
+    load_config()
+
+    class Stream(httpx.AsyncByteStream):
+        async def __aiter__(self):
+            yield b"chunk1"
+            yield b"chunk2"
+
+        async def aclose(self) -> None:  # pragma: no cover - required by interface
+            pass
+
+    async def handler(request):
+        return httpx.Response(200, stream=Stream())
+
+    transport = httpx.MockTransport(handler)
+    async_client = httpx.AsyncClient(transport=transport)
+    app.state.client = async_client
+
+    payload = {
+        "model": "test-model",
+        "messages": [{"role": "user", "content": "hi"}],
+        "stream": True,
+    }
+
+    with client.stream("POST", "/v1/chat/completions", json=payload, headers={"Authorization": "Bearer test"}) as resp:
+        data = b"".join(resp.iter_bytes())
+
+    assert b"chunk1" in data and b"chunk2" in data
+    asyncio.run(async_client.aclose())
