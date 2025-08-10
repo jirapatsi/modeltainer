@@ -1,11 +1,13 @@
 # Security Baseline
 
+ModelTainer ships with minimal defaults. Harden deployments as follows.
+
 ## Gateway Authentication
-- The gateway enforces `Authorization: Bearer <token>` for every request. Set the token with the `API_KEY` environment variable.
-- Requests missing the header or presenting an invalid token receive `401 Unauthorized`.
+- Set an `API_KEY` environment variable and require `Authorization: Bearer <token>` on every request.
+- Reject missing or invalid tokens with `401 Unauthorized`.
 
 ## Reverse Proxy Hardening
-Put the gateway behind a reverse proxy that terminates TLS, limits request rates and optionally restricts source IPs.
+Place the gateway behind a TLS-terminating reverse proxy that limits request rates and optionally restricts source IP ranges.
 
 ### NGINX
 ```nginx
@@ -57,7 +59,7 @@ http:
 ```
 
 ## Container Hardening
-Run containers with least privileges:
+Run containers with least privilege.
 
 ```yaml
 services:
@@ -73,5 +75,5 @@ services:
 
 ## Basic Security Checks
 - Scan images (`docker scan` or `trivy`).
-- Run linter/static analysis (`bandit`).
-- Perform port scans and fuzz endpoints for unexpected responses.
+- Run static analysis (`bandit`).
+- Port-scan and fuzz endpoints for unexpected responses.
