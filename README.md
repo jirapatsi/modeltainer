@@ -1,39 +1,56 @@
-# modeltainer
-ModelTainer — One-command deploy for any LLM, anywhere. Run GPU (vLLM) or CPU/ARM (llama.cpp) models side-by-side via an OpenAI-compatible API. Hot-swap models with config only, scale from laptop to HPC, and compare outputs instantly.
+# ModelTainer
+
+ModelTainer delivers one‑command deployment for large language models on CPUs or GPUs. It exposes an OpenAI‑compatible API that can serve vLLM and llama.cpp models side‑by‑side, allowing you to hot‑swap models and compare results with minimal effort.
+
+## Features
+
+- **Unified API** – Interact with GPU (vLLM) and CPU/ARM (llama.cpp) models through the same endpoint.
+- **Hot‑swappable models** – Change models via configuration only; no rebuilds required.
+- **Portable** – Runs on a laptop or scales out to multi‑node clusters using Docker Compose.
+- **Streaming responses** – Tokens stream as they are generated.
+
+## Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) and Docker Compose
+- Git
 
 ## Quickstart
-1. Clone and enter the repository:
+
+1. Clone the repository and enter it:
    ```bash
-   git clone https://example.com/modeltainer.git && cd modeltainer
+   git clone https://example.com/modeltainer.git
+   cd modeltainer
    ```
-2. Start the default services:
+2. Launch the default services:
    ```bash
    make up
    ```
-3. Send a test request through the gateway:
+3. Verify the stack with a chat completion request:
    ```bash
    curl -N -X POST http://localhost:8080/v1/chat/completions \
      -H 'Content-Type: application/json' \
      -d '{"model": "llama3-8b-instruct", "messages": [{"role": "user", "content": "Hello"}]}'
    ```
-   A streaming response indicates the stack is ready.
+   A streaming response confirms everything is running.
 
-### Notes
-- First start downloads models into `./data/hf`.
-- Stop the stack with `make down`.
+### Configuration
 
-## Default Models
-The reference compose files ship with the following defaults:
+- The first run downloads models into `./data/hf`.
+- Override the defaults by setting `VLLM_MODEL` or `LLAMACPP_MODEL` before `make up`.
+- Stop and remove the stack with `make down`.
 
-- **GPU (vLLM):** `openai/gpt-oss-20b` in `mxfp4` precision.
-- **CPU (llama.cpp):** `gemma-3-1b-it-Q4_K_M.gguf`.
+## Documentation
 
-Override these by setting `VLLM_MODEL` or `LLAMACPP_MODEL` when launching the services.
-
-## Further Reading
 - [Quickstart guide](docs/quickstart.md)
 - [Model swap guide](docs/model-swap.md)
-- [Troubleshooting tips](docs/troubleshooting.md)
 - [Resource sizing cheatsheet](docs/resource-sizing.md)
+- [Troubleshooting tips](docs/troubleshooting.md)
 - [A/B testing](docs/ab-testing.md)
+- [Security considerations](docs/Security.md)
+- [vLLM runbook](docs/vllm-runbook.md)
 - [Multi-model compose example](multi-models-concurrency/compose.yaml)
+
+## License
+
+ModelTainer is licensed under the [Apache 2.0 License](LICENSE).
+
