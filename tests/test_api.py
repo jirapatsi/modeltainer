@@ -29,11 +29,19 @@ def test_health():
 
 def test_models_endpoint():
     load_config()
-    resp = client.get("/v1/models")
+    resp = client.get("/v1/models", headers={"Authorization": "Bearer test"})
     assert resp.status_code == 200
     body = resp.json()
     ids = [m["id"] for m in body["data"]]
     assert "test-model-a" in ids and "test-model-b" in ids
+
+
+def test_auth_required():
+    load_config()
+    resp = client.get("/v1/models")
+    assert resp.status_code == 401
+    resp = client.get("/v1/models", headers={"Authorization": "Bearer wrong"})
+    assert resp.status_code == 401
 
 
 def test_unknown_model():
