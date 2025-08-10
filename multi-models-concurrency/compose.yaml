@@ -31,7 +31,7 @@ services:
     environment:
       MODELS_CONFIG: /config/models.yaml
     volumes:
-      - ../config/models.yaml:/config/models.yaml:ro
+      - ../config/models.multi.yaml:/config/models.yaml:ro
     depends_on:
       vllm-a:
         condition: service_healthy

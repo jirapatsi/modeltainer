@@ -23,8 +23,8 @@ def test_health():
     assert resp.status_code == 200
     body = resp.json()
     assert body["status"] == "ok"
-    assert "test-model-a" in body["models"]
-    assert "test-model-b" in body["models"]
+    assert "gpt-oss-20b-it" in body["models"]
+    assert "gemma-3-1b-it" in body["models"]
 
 
 def test_models_endpoint():
@@ -33,7 +33,7 @@ def test_models_endpoint():
     assert resp.status_code == 200
     body = resp.json()
     ids = [m["id"] for m in body["data"]]
-    assert "test-model-a" in ids and "test-model-b" in ids
+    assert "gpt-oss-20b-it" in ids and "gemma-3-1b-it" in ids
 
 
 def test_auth_required():
@@ -71,7 +71,7 @@ def test_streaming_proxy():
     app.state.client = async_client
 
     payload = {
-        "model": "test-model-a",
+        "model": "gpt-oss-20b-it",
         "messages": [{"role": "user", "content": "hi"}],
         "stream": True,
     }
@@ -87,18 +87,18 @@ def test_concurrent_models():
     load_config()
 
     async def handler(request):
-        if "8001" in str(request.url):
-            return httpx.Response(200, json={"model": "a"})
-        if "8003" in str(request.url):
-            return httpx.Response(200, json={"model": "b"})
+        if "8000" in str(request.url):
+            return httpx.Response(200, json={"model": "vllm"})
+        if "8002" in str(request.url):
+            return httpx.Response(200, json={"model": "llcpp"})
         return httpx.Response(500)
 
     transport = httpx.MockTransport(handler)
     async_client = httpx.AsyncClient(transport=transport)
     app.state.client = async_client
 
-    payload_a = {"model": "test-model-a", "messages": [{"role": "user", "content": "hi"}]}
-    payload_b = {"model": "test-model-b", "messages": [{"role": "user", "content": "hi"}]}
+    payload_a = {"model": "gpt-oss-20b-it", "messages": [{"role": "user", "content": "hi"}]}
+    payload_b = {"model": "gemma-3-1b-it", "messages": [{"role": "user", "content": "hi"}]}
 
     async def run():
         transport = httpx.ASGITransport(app=app)
@@ -107,8 +107,8 @@ def test_concurrent_models():
                 async_test_client.post("/v1/chat/completions", json=payload_a, headers={"Authorization": "Bearer test"}),
                 async_test_client.post("/v1/chat/completions", json=payload_b, headers={"Authorization": "Bearer test"}),
             )
-        assert resp_a.json()["model"] == "a"
-        assert resp_b.json()["model"] == "b"
+        assert resp_a.json()["model"] == "vllm"
+        assert resp_b.json()["model"] == "llcpp"
         await async_client.aclose()
 
     asyncio.run(run())

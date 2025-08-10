@@ -1,19 +1,8 @@
 models:
-  test-model-a:
+  gpt-oss-20b-it:
     backend: vllm
-    backend_url: "http://localhost:8001"
-    headers:
-      x-test: "1"
-    limits:
-      max_tokens: 1000
-  test-model-b:
-    backend: vllm
-    backend_url: "http://localhost:8003"
-    headers:
-      x-test: "1"
-    limits:
-      max_tokens: 1000
-  embedding-model:
+    backend_url: "http://vllm:8000"
+  gemma-3-1b-it:
     backend: llamacpp
-    backend_url: "http://localhost:8002"
+    backend_url: "http://llcpp:8002"
     embeddings: true
