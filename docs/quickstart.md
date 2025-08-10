@@ -10,17 +10,26 @@ Bring up ModelTainer and serve an LLM behind an OpenAI-compatible API in minutes
 ## Steps
 1. Clone the repository and change into the directory:
    ```bash
-   git clone https://example.com/modeltainer.git && cd modeltainer
+   git clone https://github.com/sirirajgenomics/modeltainer.git
+   cd modeltainer
    ```
-2. Start the default vLLM and llama.cpp services:
+2. Start example backends so the gateway has models to proxy. These commands launch vLLM on a GPU and llama.cpp on the CPU:
+   ```bash
+   mkdir -p models
+   huggingface-cli download unsloth/gemma-3-1b-it-GGUF --include "gemma-3-1b-it-Q4_K_M.gguf" --local-dir models
+
+   docker compose -f vllm/compose.yaml --profile cuda up -d vllm-cuda
+   docker compose -f llama.cpp/compose.yaml up -d llcpp
+   ```
+3. Bring up the gateway:
    ```bash
    make up
    ```
-3. Verify the gateway is serving requests:
+4. Verify the gateway is serving requests:
    ```bash
    curl -N -X POST http://localhost:8080/v1/chat/completions \
      -H 'Content-Type: application/json' \
-     -d '{"model": "llama3-8b-instruct", "messages": [{"role": "user", "content": "Hello"}]}'
+     -d '{"model": "gpt-oss-20b-it", "messages": [{"role": "user", "content": "Hello"}]}'
    ```
    A streaming response confirms the stack is running.
 
