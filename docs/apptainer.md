@@ -7,7 +7,7 @@ machines without rebuilding.
 ## Build an image with a model
 
 ```bash
-scripts/apptainer/modeltainer.sh build vllm openai/gpt-oss-20b-it
+scripts/modeltainer.sh --engine apptainer build vllm openai/gpt-oss-20b-it
 ```
 
 The first run downloads the model and produces
@@ -16,7 +16,7 @@ The first run downloads the model and produces
 ## Run the model API
 
 ```bash
-scripts/apptainer/modeltainer.sh run vllm openai/gpt-oss-20b-it 8000
+scripts/modeltainer.sh --engine apptainer run vllm openai/gpt-oss-20b-it 8000
 ```
 
 The API is now reachable on `http://localhost:8000`.
@@ -25,7 +25,7 @@ Use different ports to start multiple models concurrently.
 ## Stop a running model
 
 ```bash
-scripts/apptainer/modeltainer.sh stop vllm openai/gpt-oss-20b-it
+scripts/modeltainer.sh --engine apptainer stop vllm openai/gpt-oss-20b-it
 ```
 
 Stopping frees GPU memory. Restarting the same model later does not
