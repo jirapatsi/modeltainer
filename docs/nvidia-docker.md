@@ -7,7 +7,7 @@ GPU drivers.
 ## Build an image with a model
 
 ```bash
-scripts/docker/modeltainer.sh build vllm openai/gpt-oss-20b-it
+scripts/modeltainer.sh --engine docker build vllm openai/gpt-oss-20b-it
 ```
 
 The script reads `config/docker.yaml` to determine the base image tag. The
@@ -21,7 +21,7 @@ nvidia_docker_version: "v0.10.0"
 ## Run the model API
 
 ```bash
-scripts/docker/modeltainer.sh run vllm openai/gpt-oss-20b-it 8000
+scripts/modeltainer.sh --engine docker run vllm openai/gpt-oss-20b-it 8000
 ```
 
 The API is now reachable on `http://localhost:8000`.
@@ -30,7 +30,7 @@ Use different ports to start multiple models concurrently.
 ## Stop a running model
 
 ```bash
-scripts/docker/modeltainer.sh stop vllm openai/gpt-oss-20b-it 8000
+scripts/modeltainer.sh --engine docker stop vllm openai/gpt-oss-20b-it 8000
 ```
 
 Stopping frees GPU memory. Restarting the same model later does not
