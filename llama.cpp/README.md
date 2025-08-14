@@ -4,16 +4,16 @@ This setup runs the `llama-server` from [llama.cpp](https://github.com/ggml-org/
 
 ## Usage
 
-1. Download the Gemma 3 1B (IT) model in `Q4_K_M` precision to the `models` directory:
+1. Download the GPT-OSS 20B model in `mxfp4` precision to the `models` directory:
    ```bash
    mkdir -p models
-   huggingface-cli download unsloth/gemma-3-1b-it-GGUF --include "gemma-3-1b-it-Q4_K_M.gguf" --local-dir models
+   huggingface-cli download ggml-org/gpt-oss-20b-GGUF --include "gpt-oss-20b-mxfp4.gguf" --local-dir models
    ```
 2. Start the service and gateway:
    ```bash
    docker compose -f llama.cpp/compose.yaml up -d
    ```
-   * `LLAMACPP_MODEL` – override the model filename under `models/` (default: `gemma-3-1b-it-Q4_K_M.gguf`)
+   * `LLAMACPP_MODEL` – override the model filename under `models/` (default: `gpt-oss-20b-mxfp4.gguf`)
    * `LLAMACPP_PORT` – port to expose the server (default: `8002`)
    * `LLAMACPP_CONTEXT` – context length passed via `-c` (default: `4096`)
 
