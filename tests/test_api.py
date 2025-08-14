@@ -24,7 +24,7 @@ def test_health():
     body = resp.json()
     assert body["status"] == "ok"
     assert "gpt-oss-20b-it" in body["models"]
-    assert "gemma-3-1b-it" in body["models"]
+    assert "gpt-oss-20b" in body["models"]
 
 
 def test_models_endpoint():
@@ -33,7 +33,7 @@ def test_models_endpoint():
     assert resp.status_code == 200
     body = resp.json()
     ids = [m["id"] for m in body["data"]]
-    assert "gpt-oss-20b-it" in ids and "gemma-3-1b-it" in ids
+    assert "gpt-oss-20b-it" in ids and "gpt-oss-20b" in ids
 
 
 def test_auth_required():
@@ -115,7 +115,7 @@ def test_concurrent_models():
     app.state.client = async_client
 
     payload_a = {"model": "gpt-oss-20b-it", "messages": [{"role": "user", "content": "hi"}]}
-    payload_b = {"model": "gemma-3-1b-it", "messages": [{"role": "user", "content": "hi"}]}
+    payload_b = {"model": "gpt-oss-20b", "messages": [{"role": "user", "content": "hi"}]}
 
     async def run():
         transport = httpx.ASGITransport(app=app)

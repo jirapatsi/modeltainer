@@ -16,7 +16,7 @@ Bring up ModelTainer and serve an LLM behind an OpenAI-compatible API in minutes
 2. Start example backends so the gateway has models to proxy. These commands launch vLLM on a GPU and llama.cpp on the CPU:
    ```bash
    mkdir -p models
-   huggingface-cli download unsloth/gemma-3-1b-it-GGUF --include "gemma-3-1b-it-Q4_K_M.gguf" --local-dir models
+   huggingface-cli download ggml-org/gpt-oss-20b-GGUF --include "gpt-oss-20b-mxfp4.gguf" --local-dir models
 
    docker compose -f vllm/compose.yaml --profile cuda up -d vllm-cuda
    docker compose -f llama.cpp/compose.yaml up -d llcpp

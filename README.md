@@ -27,9 +27,9 @@ ModelTainer delivers one‑command deployment for large language models on CPUs 
    ```
 2. Start example LLM backends so the gateway has targets to proxy. The commands below launch a GPU vLLM service and a CPU llama.cpp service:
    ```bash
-   # Download the Gemma model required by llama.cpp
+   # Download the GPT-OSS 20B model required by llama.cpp
    mkdir -p models
-   huggingface-cli download unsloth/gemma-3-1b-it-GGUF --include "gemma-3-1b-it-Q4_K_M.gguf" --local-dir models
+   huggingface-cli download ggml-org/gpt-oss-20b-GGUF --include "gpt-oss-20b-mxfp4.gguf" --local-dir models
 
    # Start the backends
    docker compose -f vllm/compose.yaml --profile cuda up -d vllm-cuda

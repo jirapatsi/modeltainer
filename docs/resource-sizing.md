@@ -6,7 +6,7 @@ Estimate hardware needs for common model configurations.
 |-------|---------|-----------|--------------|-------|
 | `openai/gpt-oss-20b` | vLLM | mxfp4 | ~24 GB | Single GPU |
 | `NousResearch/Meta-Llama-3-8B-Instruct` | vLLM | fp16 | ~16 GB | Single GPU |
-| `gemma-3-1b-it-Q4_K_M.gguf` | llama.cpp | Q4_K_M | ~4 GB RAM | CPU/ARM |
+| `gpt-oss-20b-mxfp4.gguf` | llama.cpp | mxfp4 | ~10 GB RAM | CPU/ARM |
 
 Adjust `GPU_COUNT` to spread models across multiple GPUs if available.
 

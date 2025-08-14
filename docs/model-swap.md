@@ -11,7 +11,7 @@ ModelTainer reads model choices from environment variables at startup:
 Set them when launching the stack:
 
 ```bash
-VLLM_MODEL="openai/gpt-4o-mini" LLAMACPP_MODEL="gemma-3-1b-it-Q4_K_M.gguf" make up
+VLLM_MODEL="openai/gpt-4o-mini" LLAMACPP_MODEL="gpt-oss-20b-mxfp4.gguf" make up
 ```
 
 The gateway automatically reloads its configuration and exposes both models via the `model` field.
